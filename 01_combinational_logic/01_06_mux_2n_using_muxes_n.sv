@@ -21,6 +21,12 @@ module mux_4_1
   // TODO
 
   // Implement mux_4_1 using three instances of mux_2_1
+  
+  wire [3:0] y01, y23;
+  
+  mux_2_1 MUX01 (d0,  d1,  sel[0], y01);
+  mux_2_1 MUX23 (d2,  d3,  sel[0], y23);
+  mux_2_1 MUX_y (y01, y23, sel[1], y);
 
 
 endmodule
