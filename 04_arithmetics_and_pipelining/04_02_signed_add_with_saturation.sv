@@ -17,6 +17,10 @@ endmodule
 //----------------------------------------------------------------------------
 
 module signed_add_with_saturation
+#(
+  parameter max_sum = 4'b0111,
+  parameter min_sum = 4'b1000
+)
 (
   input  [3:0] a, b,
   output [3:0] sum
@@ -35,7 +39,16 @@ module signed_add_with_saturation
   // and the arguments are negative,
   // the sum should be set to the minimum negative number.
 
-
+  logic overflow_plus, overflow_minus;
+  logic [3:0] inter_sum;
+  
+  assign inter_sum = a + b;
+  assign overflow_plus  =  inter_sum[3] & ~a[3] & ~b[3];
+  assign overflow_minus = ~inter_sum[3] &  a[3] &  b[3];      
+  
+   
+  assign sum = overflow_plus? max_sum : (overflow_minus? min_sum : inter_sum);
+                        
 endmodule
 
 //----------------------------------------------------------------------------

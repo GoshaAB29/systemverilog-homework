@@ -34,7 +34,16 @@ module signed_add_with_overflow
   // when the sum (either positive or negative)
   // of two input arguments does not fit into 4 bits.
   // Otherwise the 'overflow' should be set to 0.
-
+  
+  logic carry_plus, carry_minus;
+  
+  assign carry_plus  =  a[3] &  b[3];
+  assign carry_minus = ~a[3] & ~b[3];
+  
+  assign overflow = sum[3]? carry_minus : carry_plus; 
+  
+  
+  assign sum = a + b;
 
 endmodule
 

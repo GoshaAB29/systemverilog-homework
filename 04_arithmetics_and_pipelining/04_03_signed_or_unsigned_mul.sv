@@ -53,6 +53,30 @@ module signed_or_unsigned_mul
   output [2 * n - 1:0] res
 );
 
+  logic [    n - 1:0] abs_a, abs_b;
+  logic [2 * n - 1:0] unsigned_res, signed_res, abs_mul;
+  logic signed_minus;
+  logic sign_a, sign_b;
+  
+  assign sign_a = a[n - 1];
+  assign sign_b = b[n - 1];
+
+  always_comb
+  begin
+    signed_minus = (a != n'(0)) & (b != n'(0))? sign_a ^ sign_b : 0;
+    
+    abs_a = (sign_a)? (~a + n'(1)) : a;
+    abs_b = (sign_b)? (~b + n'(1)) : b;
+    
+    abs_mul = abs_a * abs_b;                                                               
+  end
+  
+  assign signed_res = signed_minus? {signed_minus, ~abs_mul[2 * n - 2:0] + n'(1)}
+                                  : {signed_minus,  abs_mul[2 * n - 2:0]};
+  assign unsigned_res = a * b;  
+
+  assign res = signed_mul? signed_res : unsigned_res;
+
 endmodule
 
 //----------------------------------------------------------------------------
