@@ -40,6 +40,58 @@ module formula_1_pipe
     // in the article by Yuri Panchul published in
     // FPGA-Systems Magazine :: FSM :: Issue ALFA (state_0)
     // You can download this issue from https://fpga-systems.ru/fsm
+    
+    logic res_sqrt_123_vld;
+    logic [31:0] res_sum;
+    
+    isqrt sqrt1
+    (
+        .clk   ( clk           ),
+        .rst   ( rst           ),
 
+        .x_vld ( arg_vld       ),
+        .x     ( a             ),
 
+        .y_vld (               ),
+        .y     (               )
+    );
+    
+    isqrt sqrt2
+    (
+        .clk   ( clk           ),
+        .rst   ( rst           ),
+
+        .x_vld ( arg_vld       ),
+        .x     ( b             ),
+
+        .y_vld (               ),
+        .y     (               )
+    );
+    
+    isqrt sqrt3
+    (
+        .clk   ( clk           ),
+        .rst   ( rst           ),
+
+        .x_vld ( arg_vld       ),
+        .x     ( c             ),
+
+        .y_vld (               ),
+        .y     (               )
+    );
+    
+    always_ff @(posedge clk)
+      if (rst)
+        res_sqrt_123_vld <= 1'b0;
+      else
+        res_sqrt_123_vld <= sqrt1.y_vld & sqrt2.y_vld & sqrt3.y_vld;
+        
+    always_ff @(posedge clk)
+      if (sqrt1.y_vld & sqrt2.y_vld & sqrt3.y_vld)
+        res_sum <= sqrt1.y + sqrt2.y + sqrt3.y;
+        
+        
+    assign res_vld = res_sqrt_123_vld;    
+    assign res     = res_sum;    
+          
 endmodule

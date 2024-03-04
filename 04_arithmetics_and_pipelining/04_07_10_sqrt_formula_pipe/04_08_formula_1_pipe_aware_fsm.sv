@@ -59,6 +59,81 @@ module formula_1_pipe_aware_fsm
     // in the article by Yuri Panchul published in
     // FPGA-Systems Magazine :: FSM :: Issue ALFA (state_0)
     // You can download this issue from https://fpga-systems.ru/fsm
-
-
+    
+    enum logic [2:0]
+    {
+      st_idle       = 3'd0,      //wait: (input)c
+      st_wait_arg_b = 3'd1,      //wait: (input)b
+      st_wait_arg_c = 3'd2,      //wait: (input)a
+      st_wait_a_res = 3'd3,      //wait: sqrt(a)
+      st_wait_b_res = 3'd4,      //wait: sqrt(b)
+      st_wait_c_res = 3'd5       //wait: sqrt(c)  
+    }
+    state, next_state;
+    
+    always_comb                  //FSM
+    begin
+      next_state = state;  
+      
+      case (state)
+      st_idle       : if (arg_vld)     next_state = st_wait_arg_b;
+      st_wait_arg_b :                  next_state = st_wait_arg_c;
+      st_wait_arg_c :                  next_state = st_wait_a_res;
+      st_wait_a_res : if (isqrt_y_vld) next_state = st_wait_b_res;
+      st_wait_b_res :                  next_state = st_wait_c_res;
+      st_wait_c_res :                  next_state = st_idle;
+      endcase
+      
+    end
+    
+    always_comb                  //isqrt module
+    begin
+      isqrt_x_vld = 1'b0;
+      
+      case (state)
+      st_idle :
+        begin
+          isqrt_x_vld = arg_vld;
+          isqrt_x     = a;
+        end
+      
+      st_wait_arg_b : 
+        begin
+          isqrt_x_vld = 1'b1;
+          isqrt_x     = b;
+        end
+      st_wait_arg_c :
+        begin
+          isqrt_x_vld = 1'b1;
+          isqrt_x     = c;
+        end
+          
+      st_wait_a_res :  ;
+      st_wait_b_res :  ;
+      st_wait_c_res :  ;
+      endcase
+      
+    end
+    
+    
+    always_ff @ (posedge clk)    //upd state
+      if (rst)
+        state <= st_idle;
+      else
+        state <= next_state;
+   
+    
+    always_ff @ (posedge clk)    //upd valid
+      if (rst)
+        res_vld <= 1'b0;
+      else 
+        res_vld <= (state == st_wait_c_res);
+   
+        
+    always_ff @ (posedge clk)    //upd res
+      if (state == st_idle)
+        res <= 32'd0;
+      else
+        res <= (isqrt_y_vld)? res + isqrt_y : res;
+        
 endmodule
